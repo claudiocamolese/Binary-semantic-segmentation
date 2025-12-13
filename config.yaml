@@ -1,0 +1,40 @@
+# Dataset paths
+dataset:
+  base_path: "./dataset"   # dancers
+  images_path: "./dataset/images"
+  masks_path: "./dataset/masks"
+
+# Output paths
+output:
+  base_dir: "output"
+  best_model: "output/checkpoints/"
+  convergence_plot: "output/figures/convergence_plot.png"
+  predict_plot: "output/predict_plot.png"
+  test_csv: "output/test_data.csv"
+  val_csv: "output/val_data.csv"
+  train_csv: "output/training_data.csv"
+
+# Data split
+split:
+  test: 0.15
+  test_val: [0.1, 0.1]
+# Training setup
+training:
+    hourglass:
+      lr: 0.001
+      epochs: 20
+      batch_size: 128
+      threshold: 0.5
+
+# Model parameters
+model:
+  num_channels: 1
+  num_classes: 1
+  num_levels: 3
+
+# Input image size
+input:
+  width: 128
+  height: 128
+
+
