@@ -6,9 +6,13 @@ import os
 
 from PyQt5.QtCore import QLibraryInfo
 from imutils import paths
+from torch.nn import BCEWithLogitsLoss
 
+from train import Trainer
+from test import Tester
 from utils.dataloader import Dataloader
-from utils.train import Trainer
+from utils.plot import PlotModel
+from utils.show_results import Shower
 from model.hourglass import HourglassNet
 
 
@@ -22,28 +26,50 @@ def main(args):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     if args.gpu:
-        with open('utils/config_gpu.yaml', 'r') as file:
+        with open('config_gpu.yaml', 'r') as file:
             config_file = yaml.safe_load(file) 
             imagePaths = sorted(list(paths.list_images(config_file["dataset"]["images_path"])))
             maskPaths = sorted(list(paths.list_images(config_file["dataset"]["masks_path"])))
 
     else:
-        with open('utils/config.yaml', 'r') as file:
+        with open('config.yaml', 'r') as file:
             config_file = yaml.safe_load(file) 
             imagePaths = sorted(list(paths.list_images(config_file["dataset"]["images_path"])))
             maskPaths = sorted(list(paths.list_images(config_file["dataset"]["masks_path"])))
         
     data_loader = Dataloader(image_path= imagePaths, mask_path= maskPaths, config_file= config_file)
-    train_loader, test_loader = data_loader.get_loader() 
+    train_loader, val_loader, test_loader = data_loader.get_loader() 
+
+    print(len(train_loader), len(val_loader), len(test_loader))
 
     if args.train:
-        trainer = Trainer(config= config_file)
+        trainer = Trainer(config= config_file, train_loader= train_loader, val_loader= val_loader, device= device)
 
         if args.hourglass:
             os.makedirs("./figures/hourglass/", exist_ok= True)
-            model = HourglassNet(in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 2)
+            os.makedirs("./output/checkpoints/hourglass/", exist_ok= True)
+            model = HourglassNet(in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 1)
+            trainer.train_hourglass(model= model)
 
-            trainer.train(model= model)
+    if args.test:
+        tester = Tester(config= config_file, device= device)
+
+        if args.hourglass:
+            model = HourglassNet(in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 1)
+            Loss = BCEWithLogitsLoss()
+            plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= "./output/checkpoints/hourglass")
+            
+            plot.plot_model(input= plot.input_model())
+            
+            state_dict = torch.load("./output/checkpoints/hourglass/final_model.pth", map_location=device)
+            model.load_state_dict(state_dict)
+            model, avg_loss = tester.test_hourglass(model= model, test_loader= test_loader, Loss= Loss)
+            print(f"Test loss: {avg_loss:.2f}")
+            
+            predictor = Shower(model=model, device=device, test_loader=test_loader)
+            predictor.predict_test_set()
+
+
 
 
 

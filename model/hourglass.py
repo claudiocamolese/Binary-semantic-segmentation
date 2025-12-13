@@ -29,7 +29,7 @@ class UpConvBlock(nn.Module):
     
     
 class HourglassNet(nn.Module):
-    def __init__(self, in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 2):
+    def __init__(self, in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 1):
         super().__init__()
 
         self.encoder = nn.Sequential(

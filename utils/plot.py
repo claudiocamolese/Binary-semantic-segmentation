@@ -1,0 +1,55 @@
+import torch
+import os
+import matplotlib.pyplot as plt
+try:
+    from torchviz import make_dot
+except:
+    pass
+
+class PlotModel():
+    """Generate and plot the computational graph of a PyTorch model."""
+    
+    def __init__(self, model, device, path, in_channel=3, img_size=128):
+        """Initialize the PlotModel helper with dynamic dimensions.
+
+        Args:
+            model (nn.Module): The PyTorch model to visualize.
+            device (str): Device on which the model will run.
+            in_channel (int): Number of input channels (e.g., 1 for MNIST, 3 for CIFAR).
+            img_size (int): Height/Width of the input image (e.g., 28 or 32).
+        """
+        self.model = model
+        self.device = device
+        self.path = path
+        self.in_channel = in_channel
+        self.img_size = img_size
+        
+        self.model.to(self.device)
+        self.model.eval()
+        
+    def input_model(self):
+        """Create random diffusion inputs for testing the model using configured dims.
+
+        Returns:
+            tuple: Random tensors (img, t, labels) for a test forward pass.
+        """
+        batch_size= 2
+        return torch.randn(batch_size, self.in_channel, self.img_size, self.img_size)
+
+    def plot_model(self, input):
+        """Plot and save the model's computational graph.
+
+        Args:
+            input (tuple): Tuple containing model inputs.
+            path (str): Directory where the graph will be saved.
+        """
+        os.makedirs(f"{self.path}/model_graph", exist_ok= True)
+
+        y = self.model(input)
+        
+        # Genera il grafico
+        dot = make_dot(y, params=dict(self.model.named_parameters()))
+        dot.format = 'png'
+        dot.render(f'{self.path}/model_graph/model_plot')
+
+    
