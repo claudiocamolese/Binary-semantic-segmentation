@@ -52,12 +52,9 @@ class Dataloader():
         num_workers = os.cpu_count()
 
         # DataLoader
-        self.train_loader = DataLoader(train_set, shuffle=True, batch_size=batch_size,
-                                       pin_memory=pin_memory, num_workers=num_workers)
-        self.val_loader = DataLoader(val_set, shuffle=False, batch_size=batch_size,
-                                     pin_memory=pin_memory, num_workers=num_workers)
-        self.test_loader = DataLoader(test_set, shuffle=False, batch_size=batch_size,
-                                      pin_memory=pin_memory, num_workers=num_workers)
+        self.train_loader = DataLoader(train_set, shuffle=True, batch_size=batch_size, pin_memory = True)
+        self.val_loader = DataLoader(val_set, shuffle=False, batch_size=batch_size, pin_memory = True)
+        self.test_loader = DataLoader(test_set, shuffle=False, batch_size=batch_size, pin_memory = True)
         
         self.testImages = testImages
 

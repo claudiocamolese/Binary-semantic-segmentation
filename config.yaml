@@ -23,13 +23,13 @@ training:
   hourglass:
     lr: 0.001
     epochs: 200
-    batch_size: 128
+    batch_size: 64
     threshold: 0.5
 
   unet:
     lr: 0.001
     epochs: 200
-    batch_size: 128
+    batch_size: 64
     threshold: 0.5
 
 

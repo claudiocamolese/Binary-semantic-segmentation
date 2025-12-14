@@ -29,7 +29,7 @@ class Trainer():
 
         self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
 
-    def train_unet(self, model):
+    def train_unet(self, model, model_name):
 
         self.lr = self.config["training"]["unet"]["lr"]
         self.epochs = self.config["training"]["unet"]["epochs"]
@@ -38,8 +38,6 @@ class Trainer():
         self.model.train()
 
         loss = BCEWithLogitsLoss()
-
-        model_name ="unet"
 
         self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
 
