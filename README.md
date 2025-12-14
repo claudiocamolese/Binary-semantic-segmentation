@@ -71,8 +71,8 @@ This means that not only is the model able to obtain the correct mask of the sub
 ## How to run
 You can run (train or test) two possible architectures (`Hourglass` or `Unet`).
 ```bash
-git clone https://github.com/claudiocamolese/Semantic-segmentation.git
-cd Semantic segmentation
+git clone git@github.com:claudiocamolese/Binary-semantic-segmentation.git
+cd Binary semantic segmentation
 ```
 Then, to train use the `--train` flag and for testing and producing outputs use `--test` flag.
 To use `Hourglass` architecture use `--hourglass` flag.
