@@ -55,7 +55,7 @@ def main(args):
         
         if args.unet:
             if args.big:
-                 os.makedirs("./output/checkpoints/big_net/", exist_ok= True)
+                 os.makedirs("./output/checkpoints/big_unet/", exist_ok= True)
                  model_name = "big_unet"
             else:
                 os.makedirs("./output/checkpoints/unet/", exist_ok= True)
