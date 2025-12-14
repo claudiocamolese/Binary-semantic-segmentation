@@ -49,6 +49,7 @@ def main(args):
             os.makedirs("./figures/hourglass/", exist_ok= True)
             os.makedirs("./output/checkpoints/hourglass/", exist_ok= True)
             model = HourglassNet(in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 1)
+            model.to(device= device)
             trainer.train_hourglass(model= model)
 
     if args.test:
