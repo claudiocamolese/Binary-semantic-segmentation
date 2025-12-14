@@ -93,9 +93,10 @@ def main(args):
                 model_name = "unet"
             
             printing_model(model= model, model_name= model_name)
-            plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= f"./output/checkpoints/{model_name}")
+            # plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= f"./output/checkpoints/{model_name}")
             
-            plot.plot_model(input= plot.input_model())
+            #input_tensor = plot.input_model().to(device)
+            #plot.plot_model(input=input_tensor)
             
             state_dict = torch.load(f"./output/checkpoints/{model_name}/final_model.pth", map_location=device)
             model.load_state_dict(state_dict)
