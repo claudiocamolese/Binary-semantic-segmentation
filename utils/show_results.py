@@ -11,7 +11,7 @@ class Shower:
     in figures/hourglass/predictions.
     """
 
-    def __init__(self, model, device, test_loader, num_images=20):
+    def __init__(self, model, device, test_loader, output_dir,num_images=20):
         """
         Args:
             model (nn.Module): modello PyTorch già allenato
@@ -24,8 +24,8 @@ class Shower:
         self.test_loader = test_loader
         self.model.eval()
         self.num_images = num_images
-
-        self.output_dir = "figures/hourglass/predictions"
+        self.output_dir = output_dir
+        
         os.makedirs(self.output_dir, exist_ok=True)
 
         # valori di media e std per denormalizzazione

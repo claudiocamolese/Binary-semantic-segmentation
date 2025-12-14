@@ -18,8 +18,7 @@ class Trainer():
 
         self.lr = self.config["training"]["hourglass"]["lr"]
         self.epochs = self.config["training"]["hourglass"]["epochs"]
-        self.batch_size = self.config["training"]["hourglass"]["batch_size"]
-        self.threshold = self.config["training"]["hourglass"]["threshold"]
+
 
         self.model = model
         self.model.train()
@@ -28,9 +27,23 @@ class Trainer():
 
         model_name ="hourglass"
 
-        self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, batch_size= self.batch_size, threshold= self.threshold, model_name= model_name)
+        self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
 
-    def train(self, model, Loss, lr, epochs, batch_size, threshold, model_name):
+    def train_unet(self, model):
+
+        self.lr = self.config["training"]["unet"]["lr"]
+        self.epochs = self.config["training"]["unet"]["epochs"]
+
+        self.model = model
+        self.model.train()
+
+        loss = BCEWithLogitsLoss()
+
+        model_name ="unet"
+
+        self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
+
+    def train(self, model, Loss, lr, epochs, model_name):
 
         last_loss = float('inf')
 
@@ -65,7 +78,7 @@ class Trainer():
             epoch_loss = avg_loss / num_items
             print('{} Average Loss: {:5f} lr {:.1e}'.format(epoch + 1, epoch_loss, lr_current))
             
-            model, val_loss =  self.tester.test_hourglass(model= self.model, test_loader= self.val_loader, Loss= Loss)
+            model, val_loss =  self.tester.test_model(model= self.model, test_loader= self.val_loader, Loss= Loss)
             model.train()
 
             if val_loss < last_loss:

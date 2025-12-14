@@ -14,12 +14,12 @@ from utils.dataloader import Dataloader
 from utils.plot import PlotModel
 from utils.show_results import Shower
 from model.hourglass import HourglassNet
+from model.unet import Unet
 
 
 def main(args):
 
     os.makedirs("./output", exist_ok= True)
-    os.makedirs("./figures", exist_ok= True)
 
     os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QLibraryInfo.location(QLibraryInfo.PluginsPath)
 
@@ -46,11 +46,16 @@ def main(args):
         trainer = Trainer(config= config_file, train_loader= train_loader, val_loader= val_loader, device= device)
 
         if args.hourglass:
-            os.makedirs("./figures/hourglass/", exist_ok= True)
             os.makedirs("./output/checkpoints/hourglass/", exist_ok= True)
             model = HourglassNet(in_channels= 3, hidden_dim = [8, 16, 32, 64], n_channels = 1)
             model.to(device= device)
             trainer.train_hourglass(model= model)
+        
+        if args.unet:
+            os.makedirs("./output/checkpoints/unet/", exist_ok= True)
+            model = Unet(in_channels= 3, hidden_dim= [8, 16, 32, 64], n_channels= 1)
+            model.to(device= device)
+            trainer.train_unet(model= model)
 
     if args.test:
         tester = Tester(config= config_file, device= device)
@@ -64,12 +69,24 @@ def main(args):
             
             state_dict = torch.load("./output/checkpoints/hourglass/final_model.pth", map_location=device)
             model.load_state_dict(state_dict)
-            model, avg_loss = tester.test_hourglass(model= model, test_loader= test_loader, Loss= Loss)
-            print(f"Test loss: {avg_loss:.2f}")
+            model, avg_loss = tester.test_model(model= model, test_loader= test_loader, Loss= Loss)
             
-            predictor = Shower(model=model, device=device, test_loader=test_loader)
+            predictor = Shower(model=model, device=device, test_loader=test_loader, output_dir= "./output/figures/hourglass/")
             predictor.predict_test_set()
 
+        if args.unet:
+            model = Unet(in_channels= 3, hidden_dim= [8, 16, 32, 64], n_channels= 1)
+            Loss = BCEWithLogitsLoss()
+            plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= "./output/checkpoints/unet")
+            
+            plot.plot_model(input= plot.input_model())
+            
+            state_dict = torch.load("./output/checkpoints/unet/final_model.pth", map_location=device)
+            model.load_state_dict(state_dict)
+            model, avg_loss = tester.test_model(model= model, test_loader= test_loader, Loss= Loss)
+            
+            predictor = Shower(model=model, device=device, test_loader=test_loader, output_dir= "./output/figures/unet/")
+            predictor.predict_test_set()
 
 
 

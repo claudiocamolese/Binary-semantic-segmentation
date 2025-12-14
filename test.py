@@ -7,7 +7,7 @@ class Tester():
         self.config = config
         self.device = device
 
-    def test_hourglass(self, model, test_loader, Loss):
+    def test_model(self, model, test_loader, Loss):
         
         model.to(self.device)
         model.eval()
@@ -27,3 +27,4 @@ class Tester():
         print(f"Test loss: {avg_loss:.2f}")
 
         return model, avg_loss
+    

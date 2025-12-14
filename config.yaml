@@ -20,11 +20,18 @@ split:
   test_val: [0.1, 0.1]
 # Training setup
 training:
-    hourglass:
-      lr: 0.001
-      epochs: 200
-      batch_size: 128
-      threshold: 0.5
+  hourglass:
+    lr: 0.001
+    epochs: 200
+    batch_size: 128
+    threshold: 0.5
+
+  unet:
+    lr: 0.001
+    epochs: 200
+    batch_size: 128
+    threshold: 0.5
+
 
 # Model parameters
 model:
