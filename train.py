@@ -1,13 +1,31 @@
 import torch
 from tqdm import tqdm
 from torch.optim import Adam
-from torch.optim.lr_scheduler import StepLR, CosineAnnealingLR
+from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.nn import BCEWithLogitsLoss
 
 from test import Tester
 
 class Trainer():
+    """
+        Training utility class for segmentation models.
+
+        This class handles:
+        - Model training loops
+        - Optimizer and learning rate scheduling
+        - Validation through the Tester class
+        - Checkpoint saving based on validation loss
+    """
     def __init__(self, config, train_loader, val_loader, device):
+        """
+            Initialize the Trainer.
+
+            Args:
+                config (dict): Configuration dictionary containing training hyperparameters.
+                train_loader (torch.utils.data.DataLoader): DataLoader for the training dataset.
+                val_loader (torch.utils.data.DataLoader): DataLoader for the validation dataset.
+                device (torch.device): Device used for training.
+        """
         self.config = config
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -15,6 +33,15 @@ class Trainer():
         self.tester = Tester(config= self.config, device= self.device)
         
     def train_hourglass(self, model):
+        """
+            Train an Hourglass-based segmentation model.
+
+            Training hyperparameters (learning rate and epochs) are read from
+            config["training"]["hourglass"].
+
+            Args:
+                model (torch.nn.Module): Hourglass model to be trained.
+        """
 
         self.lr = self.config["training"]["hourglass"]["lr"]
         self.epochs = self.config["training"]["hourglass"]["epochs"]
@@ -30,7 +57,16 @@ class Trainer():
         self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
 
     def train_unet(self, model, model_name):
+        """
+            Train a U-Net based segmentation model.
 
+            Training hyperparameters (learning rate and epochs) are read from
+            config["training"]["unet"].
+
+            Args:
+                model (torch.nn.Module): U-Net model to be trained.
+                model_name (str): Name used to save checkpoints.
+        """
         self.lr = self.config["training"]["unet"]["lr"]
         self.epochs = self.config["training"]["unet"]["epochs"]
 
@@ -42,6 +78,22 @@ class Trainer():
         self.train(model= self.model, Loss = loss, lr= self.lr, epochs= self.epochs, model_name= model_name)
 
     def train(self, model, Loss, lr, epochs, model_name):
+        """
+            Generic training loop for a segmentation model.
+
+            This method performs:
+            - Forward and backward passes on the training set
+            - Learning rate scheduling with cosine annealing
+            - Validation after each epoch
+            - Model checkpointing based on validation loss
+
+            Args:
+                model (torch.nn.Module): Model to train.
+                Loss (callable): Loss function used for optimization.
+                lr (float): Initial learning rate.
+                epochs (int): Number of training epochs.
+                model_name (str): Name used for saving model checkpoints.
+        """
 
         last_loss = float('inf')
 

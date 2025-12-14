@@ -1,10 +1,8 @@
 import torch
-import numpy
 import argparse
 import yaml
 import os
 
-from PyQt5.QtCore import QLibraryInfo
 from imutils import paths
 from torch.nn import BCEWithLogitsLoss
 
@@ -22,22 +20,13 @@ def main(args):
 
     os.makedirs("./output", exist_ok= True)
 
-    os.environ["QT_QPA_PLATFORM_PLUGIN_PATH"] = QLibraryInfo.location(QLibraryInfo.PluginsPath)
-
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    if args.gpu:
-        with open('config_gpu.yaml', 'r') as file:
-            config_file = yaml.safe_load(file) 
-            imagePaths = sorted(list(paths.list_images(config_file["dataset"]["images_path"])))
-            maskPaths = sorted(list(paths.list_images(config_file["dataset"]["masks_path"])))
-
-    else:
-        with open('config.yaml', 'r') as file:
-            config_file = yaml.safe_load(file) 
-            imagePaths = sorted(list(paths.list_images(config_file["dataset"]["images_path"])))
-            maskPaths = sorted(list(paths.list_images(config_file["dataset"]["masks_path"])))
-        
+    with open('config.yaml', 'r') as file:
+        config_file = yaml.safe_load(file) 
+        imagePaths = sorted(list(paths.list_images(config_file["dataset"]["images_path"])))
+        maskPaths = sorted(list(paths.list_images(config_file["dataset"]["masks_path"])))
+    
     data_loader = Dataloader(image_path= imagePaths, mask_path= maskPaths, config_file= config_file)
     train_loader, val_loader, test_loader = data_loader.get_loader() 
 
@@ -93,10 +82,9 @@ def main(args):
                 model_name = "unet"
             
             printing_model(model= model, model_name= model_name)
-            # plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= f"./output/checkpoints/{model_name}")
+            plot = PlotModel(model= model, device= device, in_channel= 3, img_size= config_file["input"]["height"], path= f"./output/checkpoints/{model_name}")
             
-            #input_tensor = plot.input_model().to(device)
-            #plot.plot_model(input=input_tensor)
+            plot.plot_model(input= plot.input_model())
             
             state_dict = torch.load(f"./output/checkpoints/{model_name}/final_model.pth", map_location=device)
             model.load_state_dict(state_dict)
@@ -106,11 +94,8 @@ def main(args):
             predictor.predict_test_set()
 
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gpu", action="store_true", help= "Run on the gpu cluster")
     parser.add_argument("--train", action="store_true", help="training mode")
     parser.add_argument("--test", action="store_true", help="testing mode")
     parser.add_argument("--big", action="store_true", help= "Run bigger model")

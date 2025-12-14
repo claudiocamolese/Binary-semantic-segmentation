@@ -1,10 +1,9 @@
 import torch
 import os
 import matplotlib.pyplot as plt
-try:
-    from torchviz import make_dot
-except:
-    pass
+
+from torchviz import make_dot
+
 
 class PlotModel():
     """Generate and plot the computational graph of a PyTorch model."""

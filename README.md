@@ -1,83 +1,93 @@
-Practical 3: Segmentation - HourGlass vs U-net
-=========================================
+# Binary semantic segmentation
 
-## Goals
+This project implements an end-to-end image segmentation pipeline. The goal is to train and evaluate two different architectures: a `Hourglass` and a `UNet`. Moreover, the `UNet` architecture is trained on two differents hidden_dims in order to increase model expressivity. 
+The project is modular and designed to be easily extensible to new datasets, models and training configurations.
 
-- implement HourGlass network
-- implement U-net
-- compare both methods
-- optionally, you can test generative models on this basis: auto-encoder, VAE
+---
+## Results
 
-## Evaluation
-The practical will not be evaluated.
-The written exam will include comprehension questions on the TP.
+The results are displayed as a plot with four panels. In the top-left is the dataset image, top-right shows the ground-truth masked image, bottom-left shows the model-predicted mask using a pixel-wise threshold of 0.5 and bottom-right shows the model’s full mask without any threshold applied.
+Here is showed the comparison between the `Hourglass` and the `Unet` model with the `--big` flag.  
 
-## Getting started
+<p align="center">
+  <img src="output/figures/hourglass/predict_plot_img18.png" width="45%" />
+  <img src="output/figures/big_unet/predict_plot_img18.png" width="45%" />
+</p>
+<p align="center">
+  <img src="output/figures/hourglass/predict_plot_img19.png" width="45%" />
+  <img src="output/figures/big_unet/predict_plot_img19.png" width="45%" />
+</p>
 
-### Dataset
-1. Data is contained from the tictoc dance sequences.
-   - **dataset** : The dataset contains the images and the masks stored on
-     Ensimag machines in folder `/matieres/5MMVORF/04-dataset`, referred
-     throughout as `dataset` folder below for simplicity. 
-     
-   - [`train.py`](train.py) is the file containing the main training code.
+What can be observed is that the U-Net model with larger hidden dimensions is able to better predict the semantic mask. Additionally, the masked image with threshold closely resembles the unthresholded masked image, indicating that the model is much more confident in its predictions.
 
-### References
-
-The original articles where some of the architectures were described.
-
-[1] U-Net: Convolutional Networks for Biomedical Image Segmentation ;
-Olaf Ronneberger, Philipp Fischer, Thomas Brox ; 2015
-
-## Part 1 : Examine the code
-
-A first naive attempt to segment is provided through the SimpleConv architecture,
-which runs the image through a series of convolutions.
-A first stack of convolutions encodes increasingly more features,
-and a second decodes progressively less features, until it predicts
-just one value per pixel, which corresponds to our segmentation per pixel.
-
-1. Run the training code and predict.
-2. Does it converge easily?
-
-## Part 2 : Hourglass convolutional neural network
-
-Implement the following Hourglass convolutional neural network, 
-starting with a copy of the SimpleConv class. In the following diagram, 
-you see what we want to achieve: instead of layering naive convolutions, 
-we want to create a bottleneck, where the number of features is reduced 
-and creates a 'latent space' encoding the abstract space of people segmentations.
-To this goal, you must add pooling layers in the network encoder part
-to progressively reduce the size of the feature map. Reciprocally,
-in the decoder loop, you must upscale the features such that the size of 
-the output image coincides with the input size (same number of upconvolutions).
-Consult the documentation of [ConvTranspose2D](https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html) in PyTorch.
-
-![alt the hourglass][hourglass]
-
-[hourglass]: hourglass_scheme.png "HourGlass scheme"
-
-**Questions**
-
-1. What do you observe with convergence?
-2. Vary the number of features and depth encoding layers. For each of these attempts,
-can you predict what is the size of the bottleneck map? Verify your predictions
-by printing its actual size. Comment on how the performance varies
-with the depth of the network / size of the bottleneck.
+This demonstrates the effectiveness of skip connections in accurately capturing and understanding the scene.
 
 
-## Part 3 : U-net convolutional neural network
-U-Net was invented to address precision problems of the original hourglass network. 
-Implement the following U-net convolutional neural network, 
-with 3 encoding and 3 decoding layers proposed, starting with a copy of your Hourglass.
+Furthermore, the model’s effectiveness is also evident when the ground-truth mask of an image is incorrect. Despite this, the model is able to predict a mask that is much more sensible than the one provided in the dataset.
 
-![alt the unet][unet]
+<p align="center">
+  <img src="output/figures/big_unet/predict_plot_img0.png" width="50%" />
+</p>
 
-[unet]: unet_scheme.png "U-Net scheme"
+This means that not only is the model able to obtain the correct mask of the subject, but when faced with an incorrect mask, it can recover the human body geometry to overcome this limitation.
 
-**Questions**
+---
 
-1. What do you observe with convergence? 
-2. Compare the obtained results with the Hourglass
-3. As with the Hourglass, vary the number of features and depth
-encoding layers and further compare both architectures.
+---
+
+## Project Structure
+
+```
+├── dataset
+│   ├── images
+│   └── masks
+├── model
+│   └── hourglass.py
+|    └── unet.py
+├── output
+│   ├── checkpoints
+│   │   ├── big_unet
+│   │   │   └── model_graph
+│   │   ├── hourglass
+│   │   │   └── model_graph
+│   │   └── unet
+│   │       └── model_graph
+│   └── figures
+│       ├── big_unet
+│       ├── hourglass
+│       └── unet
+└── utils
+│    └── dataloader.py
+│    └── dataset.py
+│    └── plot.py
+│    └── printer.py
+│    └── show_results.py
+└── README.md
+└── main.py
+└── test.py
+└── train.py
+```
+
+## How to run
+You can run (train or test) two possible architectures (`Hourglass` or `Unet`).
+```bash
+git clone https://github.com/claudiocamolese/Semantic-segmentation.git
+cd Semantic segmentation
+```
+Then, to train use the `--train` flag and for testing and producing outputs use `--test` flag.
+To use `Hourglass` architecture use `--hourglass` flag.
+To use `Unet` architecture use `--unet` flag. Here you can add the `--big` flag use the `Unet` model with higher hidden dims.
+
+Example:
+```bash
+python main.py --train --unet --big
+python main.py --train --unet
+python main.py --train --hourglass
+```
+```bash
+python main.py --test --unet --big
+python main.py --test --unet
+python main.py --test --hourglass
+```
+
+

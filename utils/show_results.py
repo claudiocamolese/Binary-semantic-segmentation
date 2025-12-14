@@ -1,23 +1,28 @@
 import torch
 import numpy as np
-import cv2
 import matplotlib.pyplot as plt
 import os
 
 
 class Shower:
     """
-    Predizioni sulle immagini del test_loader e salvataggio dei plot
-    in figures/hourglass/predictions.
-    """
+        Utility class for visualizing model predictions on the test set.
 
+        The class runs inference on images from the test DataLoader and saves
+        comparison plots (input image, ground-truth mask, predicted mask, and
+        predicted probability map) to the specified output directory.
+    """
     def __init__(self, model, device, test_loader, output_dir,num_images=20):
         """
-        Args:
-            model (nn.Module): modello PyTorch già allenato
-            device (str): "cuda" o "cpu"
-            test_loader (DataLoader): DataLoader contenente immagini di test
-            num_images (int): numero di immagini da predire
+            Initialize the Shower.
+
+            Args:
+                model (torch.nn.Module): Trained PyTorch model.
+                device (torch.device or str): Device used for inference ("cuda" or "cpu").
+                test_loader (torch.utils.data.DataLoader): DataLoader containing test images.
+                output_dir (str): Directory where prediction plots will be saved.
+                num_images (int, optional): Number of test images to visualize.
+                    Defaults to 20.
         """
         self.model = model.to(device)
         self.device = device
@@ -34,19 +39,50 @@ class Shower:
 
     @staticmethod
     def _get_img_name(imagePath):
+        """
+            Extract the image name from a file path (without extension).
+
+            Args:
+                imagePath (str): Full path to the image file.
+
+            Returns:
+                str: Image file name without extension.
+        """
         imagePathR = "".join(reversed(imagePath))
         pos = imagePathR.find('/')
         return imagePath[len(imagePath)-pos:len(imagePath)-4]
 
     def _denormalize(self, img):
         """
-        Denormalizza un'immagine normalizzata: img in HWC con valori [0,1]
+            Denormalize a normalized image.
+
+            Args:
+                img (np.ndarray): Image in HWC format with values in [0, 1].
+
+            Returns:
+                np.ndarray: Denormalized image with values clipped to [0, 1].
         """
         img = img * self.train_std + self.train_mean
         img = np.clip(img, 0, 1)
         return img
 
     def _prepare_plot(self, origImage, origMask, predMask, predProb, imageName):
+        """
+            Create and save a visualization plot for a single prediction.
+
+            The plot includes:
+            - Original RGB image
+            - Ground-truth mask
+            - Binary predicted mask
+            - Predicted probability map
+
+            Args:
+                origImage (np.ndarray): Original RGB image (HWC).
+                origMask (np.ndarray): Ground-truth mask.
+                predMask (np.ndarray): Binary predicted mask.
+                predProb (np.ndarray): Predicted probability map.
+                imageName (str): Name used to save the plot.
+        """
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         axs = axs.flatten()
 
@@ -68,7 +104,11 @@ class Shower:
 
     def predict_test_set(self):
         """
-        Itera sulle prime N immagini del test_loader e salva i plot delle predizioni.
+            Run inference on the first N images of the test set and save prediction plots.
+
+            The method iterates over the test DataLoader, performs forward passes,
+            and generates visualization plots until the specified number of images
+            is reached.
         """
         self.model.eval()
         images_count = 0
